@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<TabPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.taskmanager.controller.MainController">
+    <tabs>
+        <Tab text="Tasks">
+            <content>
+                <VBox spacing="10">
+                    <ListView fx:id="taskListView" VBox.vgrow="ALWAYS"/>
+                    <HBox spacing="10">
+                        <Button text="Add Task" onAction="#addTask"/>
+                        <Button text="Edit Task" onAction="#editTask"/>
+                        <Button text="Delete Task" onAction="#deleteTask"/>
+                    </HBox>
+                </VBox>
+            </content>
+        </Tab>
+        <Tab text="Users">
+            <content>
+                <VBox spacing="10">
+                    <ListView fx:id="userListView" VBox.vgrow="ALWAYS"/>
+                    <HBox spacing="10">
+                        <Button text="Add User" onAction="#addUser"/>
+                        <Button text="Edit User" onAction="#editUser"/>
+                        <Button text="Delete User" onAction="#deleteUser"/>
+                    </HBox>
+                </VBox>
+            </content>
+        </Tab>
+        <Tab text="Categories">
+            <content>
+                <VBox spacing="10">
+                    <ListView fx:id="categoryListView" VBox.vgrow="ALWAYS"/>
+                    <HBox spacing="10">
+                        <Button text="Add Category" onAction="#addCategory"/>
+                        <Button text="Edit Category" onAction="#editCategory"/>
+                        <Button text="Delete Category" onAction="#deleteCategory"/>
+                    </HBox>
+                </VBox>
+            </content>
+        </Tab>
+    </tabs>
+</TabPane>
