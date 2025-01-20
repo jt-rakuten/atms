@@ -1,6 +1,7 @@
 package com.taskmanager.service;
 
 import com.taskmanager.model.Task;
+import com.taskmanager.util.FileStorage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -10,7 +11,15 @@ import java.util.UUID;
  * Service class for managing tasks.
  */
 public class TaskService {
-    private final List<Task> tasks = new ArrayList<>();
+    private List<Task> tasks;
+
+    public TaskService() {
+        tasks = FileStorage.loadTasks();
+
+        if (tasks == null) {
+            tasks = new ArrayList<>();
+        }
+    }
 
     /**
      * Creates a new task and adds it to the list.
@@ -69,5 +78,9 @@ public class TaskService {
      */
     public boolean deleteTask(UUID id) {
         return tasks.removeIf(task -> task.getId().equals(id));
+    }
+
+    public void saveAll() {
+        FileStorage.saveTasks(tasks);
     }
 }

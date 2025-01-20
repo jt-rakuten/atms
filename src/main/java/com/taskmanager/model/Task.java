@@ -89,10 +89,3 @@ public class Task {
                 '}';
     }
 }
-
-enum TaskStatus {
-    PENDING,
-    IN_PROGRESS,
-    COMPLETED,
-    ARCHIVED
-}
