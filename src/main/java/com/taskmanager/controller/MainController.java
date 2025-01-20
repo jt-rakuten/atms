@@ -17,7 +17,6 @@ import javafx.scene.control.ListView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-//test push
 public class MainController {
     @FXML
     private ListView<Task> taskListView;
