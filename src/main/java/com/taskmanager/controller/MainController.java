@@ -73,12 +73,24 @@ public class MainController {
 
     @FXML
     private void addUser() {
-        // TODO: Implement add user dialog
+        User newUser = new User("", "", "");
+        if (showUserDialog(newUser)) {
+            userService.createUser(newUser);
+            refreshLists();
+        }
     }
 
     @FXML
     private void editUser() {
-        // TODO: Implement edit user dialog
+        User selectedUser = userListView.getSelectionModel().getSelectedItem();
+        if (selectedUser != null) {
+            if (showUserDialog(selectedUser)) {
+                userService.updateUser(selectedUser.getId(), selectedUser);
+                refreshLists();
+            }
+        } else {
+            showAlert("No User Selected", "Please select a user to edit.");
+        }
     }
 
     @FXML
@@ -90,15 +102,75 @@ public class MainController {
         }
     }
 
+    private boolean showUserDialog(User user) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/taskmanager/user-dialog.fxml"));
+            Parent root = loader.load();
+
+            UserDialogController controller = loader.getController();
+            controller.setUser(user);
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Edit User");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(userListView.getScene().getWindow());
+            dialogStage.setScene(new Scene(root));
+
+            dialogStage.showAndWait();
+
+            return controller.isSaveClicked();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
     @FXML
     private void addCategory() {
-        // TODO: Implement add category dialog
+        Category newCategory = new Category(null, "", "");
+        if (showCategoryDialog(newCategory)) {
+            categoryService.createCategory(newCategory);
+            refreshLists();
+        }
     }
 
     @FXML
     private void editCategory() {
-        // TODO: Implement edit category dialog
+        Category selectedCategory = categoryListView.getSelectionModel().getSelectedItem();
+        if (selectedCategory != null) {
+            if (showCategoryDialog(selectedCategory)) {
+                categoryService.updateCategory(selectedCategory.id(), selectedCategory);
+                refreshLists();
+            }
+        } else {
+            showAlert("No Category Selected", "Please select a category to edit.");
+        }
     }
+
+    private boolean showCategoryDialog(Category category) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/taskmanager/category-dialog.fxml"));
+            Parent root = loader.load();
+
+            CategoryDialogController controller = loader.getController();
+            controller.setCategory(category);
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Edit Category");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(categoryListView.getScene().getWindow());
+            dialogStage.setScene(new Scene(root));
+
+            dialogStage.showAndWait();
+
+            return controller.isSaveClicked();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 
     @FXML
     private void deleteCategory() {
