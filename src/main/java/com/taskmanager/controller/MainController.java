@@ -11,11 +11,13 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
 import javafx.stage.Modality;
@@ -28,6 +30,10 @@ public class MainController {
     private ListView<User> userListView;
     @FXML
     private ListView<Category> categoryListView;
+    @FXML
+    private ComboBox<String> filterBox;
+    @FXML
+    private ComboBox<String> sortBox;
 
     private TaskService taskService = new TaskService();
     private UserService userService = new UserService();
@@ -37,12 +43,10 @@ public class MainController {
 
     @FXML
     private void initialize() {
-        ComboBox<String> filterBox = new ComboBox<>();
         filterBox.getItems().addAll("All", "Pending", "Completed");
         filterBox.setValue("All");
         filterBox.setOnAction(e -> applyFilter(filterBox.getValue()));
 
-        ComboBox<String> sortBox = new ComboBox<>();
         sortBox.getItems().addAll("Due Date", "Title");
         sortBox.setValue("Due Date");
         sortBox.setOnAction(e -> applySort(sortBox.getValue()));
@@ -80,8 +84,16 @@ public class MainController {
     private void deleteTask() {
         Task selectedTask = taskListView.getSelectionModel().getSelectedItem();
         if (selectedTask != null) {
-            taskService.deleteTask(selectedTask.getId());
-            refreshLists();
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Confirm Deletion");
+            alert.setHeaderText("Delete Task");
+            alert.setContentText("Are you sure you want to delete this task?");
+
+            Optional<ButtonType> result = alert.showAndWait();
+            if (result.isPresent() && result.get() == ButtonType.OK) {
+                taskService.deleteTask(selectedTask.getId());
+                refreshLists();
+            }
         }
     }
 
@@ -144,6 +156,34 @@ public class MainController {
         if (selectedCategory != null) {
             categoryService.deleteCategory(selectedCategory.id());
             refreshLists();
+        }
+    }
+
+    @FXML
+    private void handleLogout() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirm Logout");
+        alert.setHeaderText("Logout");
+        alert.setContentText("Are you sure you want to logout?");
+
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            loggedInUser = null;
+            // Clear sensitive data
+            taskListView.getItems().clear();
+            userListView.getItems().clear();
+            categoryListView.getItems().clear();
+
+            // Show login screen again
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/taskmanager/login-dialog.fxml"));
+                Parent root = loader.load();
+                Scene scene = new Scene(root);
+                Stage stage = (Stage) taskListView.getScene().getWindow();
+                stage.setScene(scene);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 

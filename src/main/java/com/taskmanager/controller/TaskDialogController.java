@@ -3,29 +3,45 @@ package com.taskmanager.controller;
 import com.taskmanager.model.Category;
 import com.taskmanager.model.Task;
 import com.taskmanager.model.TaskStatus;
+import com.taskmanager.service.CategoryService;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.DateCell;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import javafx.stage.Stage;
 
-public class TaskDialogController {
+public class TaskDialogController extends BaseDialogController {
     @FXML private TextField titleField;
     @FXML private TextArea descriptionField;
     @FXML private DatePicker dueDatePicker;
     @FXML private ComboBox<TaskStatus> statusComboBox;
     @FXML private ComboBox<Category> categoryComboBox;
 
+    private CategoryService categoryService;
     private Task task;
-    private boolean saveClicked = false;
+
+    public void setCategoryService(CategoryService categoryService) {
+        this.categoryService = categoryService;
+    }
 
     @FXML
     private void initialize() {
         statusComboBox.getItems().setAll(TaskStatus.values());
-        // TODO: Populate categoryComboBox with actual categories
+        if (categoryService != null) {
+            categoryComboBox.getItems().setAll(categoryService.getAllCategories());
+        }
+
+        dueDatePicker.setDayCellFactory(picker -> new DateCell() {
+            @Override
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                setDisable(empty || date.isBefore(LocalDate.now()));
+            }
+        });
     }
 
     public void setTask(Task task) {
@@ -71,22 +87,9 @@ public class TaskDialogController {
         if (errorMessage.isEmpty()) {
             return true;
         } else {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Invalid Fields");
-            alert.setHeaderText("Please correct invalid fields");
-            alert.setContentText(errorMessage);
-            alert.showAndWait();
+            showAlert("Invalid Fields", "Please correct invalid fields", errorMessage, Alert.AlertType.ERROR);
             return false;
         }
-    }
-
-    private void closeDialog() {
-        Stage stage = (Stage) titleField.getScene().getWindow();
-        stage.close();
-    }
-
-    public boolean isSaveClicked() {
-        return saveClicked;
     }
 
     public Task getTask() {

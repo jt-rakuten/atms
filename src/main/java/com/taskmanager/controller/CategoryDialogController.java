@@ -2,15 +2,15 @@ package com.taskmanager.controller;
 
 import com.taskmanager.model.Category;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.stage.Stage;
+import javafx.scene.control.Alert;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 
-public class CategoryDialogController {
+public class CategoryDialogController extends BaseDialogController {
     @FXML private TextField nameField;
     @FXML private TextArea descriptionField;
 
     private Category category;
-    private boolean saveClicked = false;
 
     public void setCategory(Category category) {
         this.category = category;
@@ -41,22 +41,9 @@ public class CategoryDialogController {
         if (errorMessage.isEmpty()) {
             return true;
         } else {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Invalid Fields");
-            alert.setHeaderText("Please correct invalid fields");
-            alert.setContentText(errorMessage);
-            alert.showAndWait();
+            showAlert("Invalid Fields", "Please correct invalid fields", errorMessage, Alert.AlertType.ERROR);
             return false;
         }
-    }
-
-    private void closeDialog() {
-        Stage stage = (Stage) nameField.getScene().getWindow();
-        stage.close();
-    }
-
-    public boolean isSaveClicked() {
-        return saveClicked;
     }
 
     public Category getCategory() {

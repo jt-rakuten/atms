@@ -1,17 +1,21 @@
 package com.taskmanager.controller;
 
 import com.taskmanager.model.User;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.stage.Stage;
+import javafx.scene.control.Alert;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
 
-public class UserDialogController {
+public class UserDialogController extends BaseDialogController {
     @FXML private TextField usernameField;
     @FXML private TextField emailField;
     @FXML private PasswordField passwordField;
 
     private User user;
-    private boolean saveClicked = false;
 
     public void setUser(User user) {
         this.user = user;
@@ -54,26 +58,19 @@ public class UserDialogController {
         if (errorMessage.isEmpty()) {
             return true;
         } else {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Invalid Fields");
-            alert.setHeaderText("Please correct invalid fields");
-            alert.setContentText(errorMessage);
-            alert.showAndWait();
+            showAlert("Invalid Fields", "Please correct invalid fields", errorMessage, Alert.AlertType.ERROR);
             return false;
         }
     }
 
-    private void closeDialog() {
-        Stage stage = (Stage) usernameField.getScene().getWindow();
-        stage.close();
-    }
-
-    public boolean isSaveClicked() {
-        return saveClicked;
-    }
-
     private String hashPassword(String password) {
-        // TODO: Implement proper password hashing
-        return password;
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
+            return Base64.getEncoder().encodeToString(hash);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }
