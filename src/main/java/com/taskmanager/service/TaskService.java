@@ -1,15 +1,14 @@
 package com.taskmanager.service;
 
 import com.taskmanager.model.Task;
+import com.taskmanager.util.ErrorHandler;
 import com.taskmanager.util.FileStorage;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Service class for managing tasks.
- */
 public class TaskService {
     private List<Task> tasks;
 
@@ -21,45 +20,46 @@ public class TaskService {
         }
     }
 
-    /**
-     * Creates a new task and adds it to the list.
-     *
-     * @param task the task to be created
-     * @return the created task
-     */
-    public Task createTask(Task task) {
-        tasks.add(task);
-        return task;
+    private boolean validateTask(Task task) {
+        if (task.getTitle() == null || task.getTitle().trim().isEmpty()) {
+            ErrorHandler.showWarning("Invalid Task", "Task title cannot be empty.");
+            return false;
+        }
+        if (task.getDueDate() == null) {
+            ErrorHandler.showWarning("Invalid Task", "Task must have a due date.");
+            return false;
+        }
+        if (task.getDueDate().isBefore(LocalDateTime.now())) {
+            ErrorHandler.showWarning("Invalid Task", "Due date cannot be in the past.");
+            return false;
+        }
+        return true;
     }
 
-    /**
-     * Retrieves all tasks.
-     *
-     * @return a list of all tasks
-     */
+    public Task createTask(Task task) {
+        if (validateTask(task)) {
+            try {
+                tasks.add(task);
+                saveAll();
+                return task;
+            } catch (Exception e) {
+                ErrorHandler.showError("Error Creating Task", "An error occurred while creating the task: " + e.getMessage());
+                return null;
+            }
+        }
+        return null;
+    }
+
     public List<Task> getAllTasks() {
         return new ArrayList<>(tasks);
     }
 
-    /**
-     * Retrieves a task by its ID.
-     *
-     * @param id the ID of the task to retrieve
-     * @return an Optional containing the task if found, or an empty Optional if not found
-     */
     public Optional<Task> getTaskById(UUID id) {
         return tasks.stream()
                 .filter(task -> task.getId().equals(id))
                 .findFirst();
     }
 
-    /**
-     * Updates an existing task.
-     *
-     * @param id the ID of the task to update
-     * @param updatedTask the updated task
-     * @return an Optional containing the updated task if the update was successful, or an empty Optional if not
-     */
     public Optional<Task> updateTask(UUID id, Task updatedTask) {
         for (int i = 0; i < tasks.size(); i++) {
             if (tasks.get(i).getId().equals(id)) {
@@ -70,17 +70,15 @@ public class TaskService {
         return Optional.empty();
     }
 
-    /**
-     * Deletes a task by its ID.
-     *
-     * @param id the ID of the task to delete
-     * @return true if the task was successfully deleted, false otherwise
-     */
     public boolean deleteTask(UUID id) {
         return tasks.removeIf(task -> task.getId().equals(id));
     }
 
     public void saveAll() {
-        FileStorage.saveTasks(tasks);
+        try {
+            FileStorage.saveTasks(tasks);
+        } catch (Exception e) {
+            ErrorHandler.showError("Error Saving Tasks", "An error occurred while saving tasks: " + e.getMessage());
+        }
     }
 }

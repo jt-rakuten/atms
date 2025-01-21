@@ -1,56 +1,63 @@
 package com.taskmanager.service;
 
 import com.taskmanager.model.User;
+import com.taskmanager.util.ErrorHandler;
+import com.taskmanager.util.FileStorage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Service class for managing users.
- */
 public class UserService {
-    private final List<User> users = new ArrayList<>();
+    private List<User> users = new ArrayList<>();
 
-    /**
-     * Creates a new user and adds it to the list.
-     *
-     * @param user the user to be created
-     * @return the created user
-     */
-    public User createUser(User user) {
-        users.add(user);
-        return user;
+    public UserService () {
+        users = FileStorage.loadUsers();
+        if (users == null) {
+            users = new ArrayList<>();
+        }
     }
 
-    /**
-     * Retrieves all users.
-     *
-     * @return a list of all users
-     */
+    private boolean validateUser(User user) {
+        if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
+            ErrorHandler.showWarning("Invalid User", "User username cannot be empty.");
+            return false;
+        }
+        if (user.getPasswordHash() == null || user.getPasswordHash().trim().isEmpty()) {
+            ErrorHandler.showWarning("Invalid User", "User password cannot be empty.");
+            return false;
+        }
+        if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
+            ErrorHandler.showWarning("Invalid User", "User email cannot be empty.");
+            return false;
+        }
+        return true;
+    }
+
+    public User createUser(User user) {
+        if (validateUser(user)) {
+            try {
+                users.add(user);
+                saveAll();
+                return user;
+            } catch (Exception e) {
+                ErrorHandler.showError("Error Creating User", "An error occurred while creating the user: " + e.getMessage());
+                return null;
+            }
+        }
+        return null;
+    }
+
     public List<User> getAllUsers() {
         return new ArrayList<>(users);
     }
 
-    /**
-     * Retrieves a user by their ID.
-     *
-     * @param id the ID of the user to retrieve
-     * @return an Optional containing the user if found, or an empty Optional if not found
-     */
     public Optional<User> getUserById(UUID id) {
         return users.stream()
                 .filter(user -> user.getId().equals(id))
                 .findFirst();
     }
 
-    /**
-     * Updates an existing user.
-     *
-     * @param id the ID of the user to update
-     * @param updatedUser the updated user
-     * @return an Optional containing the updated user if the update was successful, or an empty Optional if not
-     */
     public Optional<User> updateUser(UUID id, User updatedUser) {
         for (int i = 0; i < users.size(); i++) {
             if (users.get(i).getId().equals(id)) {
@@ -61,13 +68,15 @@ public class UserService {
         return Optional.empty();
     }
 
-    /**
-     * Deletes a user by their ID.
-     *
-     * @param id the ID of the user to delete
-     * @return true if the user was successfully deleted, false otherwise
-     */
     public boolean deleteUser(UUID id) {
         return users.removeIf(user -> user.getId().equals(id));
+    }
+
+    public void saveAll() {
+        try {
+            FileStorage.saveUsers(users);
+        } catch (Exception e) {
+            ErrorHandler.showError("Error Saving Users", "An error occurred while saving users: " + e.getMessage());
+        }
     }
 }

@@ -1,0 +1,44 @@
+.root {
+    -fx-font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+    -fx-background-color: #f4f4f4;
+}
+
+.button {
+    -fx-background-color: #4CAF50;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 8 16;
+}
+
+.button:hover {
+    -fx-background-color: #45a049;
+}
+
+.list-view {
+    -fx-background-color: white;
+    -fx-border-color: #ddd;
+}
+
+.list-cell:even {
+    -fx-background-color: #f8f8f8;
+}
+
+.list-cell:odd {
+    -fx-background-color: white;
+}
+
+.tab-pane {
+    -fx-background-color: #e8e8e8;
+}
+
+.tab {
+    -fx-background-color: #ddd;
+}
+
+.tab:selected {
+    -fx-background-color: white;
+}
+
+.label {
+    -fx-font-weight: bold;
+}

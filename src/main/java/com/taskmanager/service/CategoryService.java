@@ -1,56 +1,55 @@
 package com.taskmanager.service;
 
 import com.taskmanager.model.Category;
+import com.taskmanager.util.ErrorHandler;
+import com.taskmanager.util.FileStorage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Service class for managing categories.
- */
 public class CategoryService {
-    private final List<Category> categories = new ArrayList<>();
+    private List<Category> categories = new ArrayList<>();
 
-    /**
-     * Creates a new category and adds it to the list.
-     *
-     * @param category the category to be created
-     * @return the created category
-     */
-    public Category createCategory(Category category) {
-        categories.add(category);
-        return category;
+    public CategoryService () {
+        categories = FileStorage.loadCategories();
+        if (categories == null) {
+            categories = new ArrayList<>();
+        }
     }
 
-    /**
-     * Retrieves all categories.
-     *
-     * @return a list of all categories
-     */
+    private boolean validateCategory(Category category) {
+        if (category.name() == null || category.name().trim().isEmpty()) {
+            ErrorHandler.showWarning("Invalid Category", "Category name cannot be empty.");
+            return false;
+        }
+        return true;
+    }
+
+    public Category createCategory(Category category) {
+        if (validateCategory(category)) {
+            try {
+                categories.add(category);
+                saveAll();
+                return category;
+            } catch (Exception e) {
+                ErrorHandler.showError("Error Creating Category", "An error occurred while creating the category: " + e.getMessage());
+                return null;
+            }
+        }
+        return null;
+    }
+
     public List<Category> getAllCategories() {
         return new ArrayList<>(categories);
     }
 
-    /**
-     * Retrieves a category by its ID.
-     *
-     * @param id the ID of the category to retrieve
-     * @return an Optional containing the category if found, or an empty Optional if not found
-     */
     public Optional<Category> getCategoryById(UUID id) {
         return categories.stream()
                 .filter(category -> category.id().equals(id))
                 .findFirst();
     }
 
-    /**
-     * Updates an existing category.
-     *
-     * @param id the ID of the category to update
-     * @param updatedCategory the updated category
-     * @return an Optional containing the updated category if the update was successful, or an empty Optional if not
-     */
     public Optional<Category> updateCategory(UUID id, Category updatedCategory) {
         for (int i = 0; i < categories.size(); i++) {
             if (categories.get(i).id().equals(id)) {
@@ -61,13 +60,15 @@ public class CategoryService {
         return Optional.empty();
     }
 
-    /**
-     * Deletes a category by its ID.
-     *
-     * @param id the ID of the category to delete
-     * @return true if the category was successfully deleted, false otherwise
-     */
     public boolean deleteCategory(UUID id) {
         return categories.removeIf(category -> category.id().equals(id));
+    }
+
+    public void saveAll() {
+        try {
+            FileStorage.saveCategories(categories);
+        } catch (Exception e) {
+            ErrorHandler.showError("Error Saving Categories", "An error occurred while saving categories: " + e.getMessage());
+        }
     }
 }

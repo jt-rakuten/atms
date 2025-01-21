@@ -8,6 +8,21 @@ public record Category(UUID id, String name, String description) {
     }
 
     @Override
+    public UUID id() {
+        return id;
+    }
+
+    @Override
+    public String name() {
+        return name;
+    }
+
+    @Override
+    public String description() {
+        return description;
+    }
+
+    @Override
     public String toString() {
         return "Category{" +
                 "id=" + id +
