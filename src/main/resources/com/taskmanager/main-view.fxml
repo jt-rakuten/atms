@@ -8,6 +8,10 @@
         <Tab text="Tasks">
             <content>
                 <VBox spacing="10">
+                    <HBox spacing="10" alignment="CENTER_RIGHT">
+                        <ComboBox fx:id="filterBox" />
+                        <ComboBox fx:id="sortBox" />
+                    </HBox>
                     <ListView fx:id="taskListView" VBox.vgrow="ALWAYS"/>
                     <HBox spacing="10">
                         <Button text="Add Task" onAction="#addTask"/>
