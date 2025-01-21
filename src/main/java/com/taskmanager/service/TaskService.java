@@ -1,13 +1,18 @@
 package com.taskmanager.service;
 
 import com.taskmanager.model.Task;
+import com.taskmanager.model.TaskStatus;
 import com.taskmanager.util.ErrorHandler;
 import com.taskmanager.util.FileStorage;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class TaskService {
     private List<Task> tasks;
@@ -80,5 +85,22 @@ public class TaskService {
         } catch (Exception e) {
             ErrorHandler.showError("Error Saving Tasks", "An error occurred while saving tasks: " + e.getMessage());
         }
+    }
+
+    public List<Task> getFilteredTasks(Predicate<Task> filter) {
+        return tasks.stream()
+                .filter(filter)
+                .collect(Collectors.toList());
+    }
+
+    public List<Task> getSortedTasks(Comparator<Task> comparator) {
+        return tasks.stream()
+                .sorted(comparator)
+                .collect(Collectors.toList());
+    }
+
+    public Map<TaskStatus, Long> getTaskStatusCounts() {
+        return tasks.stream()
+                .collect(Collectors.groupingBy(Task::getStatus, Collectors.counting()));
     }
 }

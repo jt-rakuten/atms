@@ -2,17 +2,21 @@ package com.taskmanager.controller;
 
 import com.taskmanager.model.Category;
 import com.taskmanager.model.Task;
+import com.taskmanager.model.TaskStatus;
 import com.taskmanager.model.User;
 import com.taskmanager.service.CategoryService;
 import com.taskmanager.service.TaskService;
 import com.taskmanager.service.UserService;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -29,9 +33,19 @@ public class MainController {
     private UserService userService = new UserService();
     private CategoryService categoryService = new CategoryService();
 
+    private User loggedInUser;
+
     @FXML
     private void initialize() {
-        refreshLists();
+        ComboBox<String> filterBox = new ComboBox<>();
+        filterBox.getItems().addAll("All", "Pending", "Completed");
+        filterBox.setValue("All");
+        filterBox.setOnAction(e -> applyFilter(filterBox.getValue()));
+
+        ComboBox<String> sortBox = new ComboBox<>();
+        sortBox.getItems().addAll("Due Date", "Title");
+        sortBox.setValue("Due Date");
+        sortBox.setOnAction(e -> applySort(sortBox.getValue()));
     }
 
     private void refreshLists() {
@@ -102,6 +116,52 @@ public class MainController {
         }
     }
 
+    @FXML
+    private void addCategory() {
+        Category newCategory = new Category(null, "", "");
+        if (showCategoryDialog(newCategory)) {
+            categoryService.createCategory(newCategory);
+            refreshLists();
+        }
+    }
+
+    @FXML
+    private void editCategory() {
+        Category selectedCategory = categoryListView.getSelectionModel().getSelectedItem();
+        if (selectedCategory != null) {
+            if (showCategoryDialog(selectedCategory)) {
+                categoryService.updateCategory(selectedCategory.id(), selectedCategory);
+                refreshLists();
+            }
+        } else {
+            showAlert("No Category Selected", "Please select a category to edit.");
+        }
+    }
+
+    @FXML
+    private void deleteCategory() {
+        Category selectedCategory = categoryListView.getSelectionModel().getSelectedItem();
+        if (selectedCategory != null) {
+            categoryService.deleteCategory(selectedCategory.id());
+            refreshLists();
+        }
+    }
+
+    public void setServices(TaskService taskService, UserService userService, CategoryService categoryService) {
+        this.taskService = taskService;
+        this.userService = userService;
+        this.categoryService = categoryService;
+
+        // Refresh the lists after setting the services
+        refreshLists();
+    }
+
+    public void setLoggedInUser(User user) {
+        this.loggedInUser = user;
+        // You might want to update the UI to reflect the logged-in user
+        // For example, you could add a label showing the current user's name
+    }
+
     private boolean showUserDialog(User user) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/taskmanager/user-dialog.fxml"));
@@ -122,29 +182,6 @@ public class MainController {
         } catch (IOException e) {
             e.printStackTrace();
             return false;
-        }
-    }
-
-
-    @FXML
-    private void addCategory() {
-        Category newCategory = new Category(null, "", "");
-        if (showCategoryDialog(newCategory)) {
-            categoryService.createCategory(newCategory);
-            refreshLists();
-        }
-    }
-
-    @FXML
-    private void editCategory() {
-        Category selectedCategory = categoryListView.getSelectionModel().getSelectedItem();
-        if (selectedCategory != null) {
-            if (showCategoryDialog(selectedCategory)) {
-                categoryService.updateCategory(selectedCategory.id(), selectedCategory);
-                refreshLists();
-            }
-        } else {
-            showAlert("No Category Selected", "Please select a category to edit.");
         }
     }
 
@@ -171,15 +208,6 @@ public class MainController {
         }
     }
 
-
-    @FXML
-    private void deleteCategory() {
-        Category selectedCategory = categoryListView.getSelectionModel().getSelectedItem();
-        if (selectedCategory != null) {
-            categoryService.deleteCategory(selectedCategory.id());
-            refreshLists();
-        }
-    }
 
     private boolean showTaskDialog(Task task) {
         try {
@@ -210,5 +238,35 @@ public class MainController {
         alert.setHeaderText(null);
         alert.setContentText(content);
         alert.showAndWait();
+    }
+
+    private void applyFilter(String filter) {
+        List<Task> filteredTasks;
+        switch (filter) {
+            case "Pending":
+                filteredTasks = taskService.getFilteredTasks(task -> task.getStatus() == TaskStatus.PENDING);
+                break;
+            case "Completed":
+                filteredTasks = taskService.getFilteredTasks(task -> task.getStatus() == TaskStatus.COMPLETED);
+                break;
+            default:
+                filteredTasks = taskService.getAllTasks();
+        }
+        taskListView.getItems().setAll(filteredTasks);
+    }
+
+    private void applySort(String sort) {
+        List<Task> sortedTasks;
+        if ("Title".equals(sort)) {
+            sortedTasks = taskService.getSortedTasks(Comparator.comparing(Task::getTitle));
+        } else {
+            sortedTasks = taskService.getSortedTasks(Comparator.comparing(Task::getDueDate));
+        }
+        taskListView.getItems().setAll(sortedTasks);
+    }
+
+    // You might want to add a method to get the logged-in user if needed
+    public User getLoggedInUser() {
+        return loggedInUser;
     }
 }

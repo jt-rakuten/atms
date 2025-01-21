@@ -79,4 +79,16 @@ public class UserService {
             ErrorHandler.showError("Error Saving Users", "An error occurred while saving users: " + e.getMessage());
         }
     }
+
+    public Optional<User> authenticateUser(String username, String password) {
+        return users.stream()
+                .filter(user -> user.getUsername().equals(username) && verifyPassword(password, user.getPasswordHash()))
+                .findFirst();
+    }
+
+    private boolean verifyPassword(String inputPassword, String storedHash) {
+        // In a real application, you'd use a proper hashing algorithm.
+        // For this example, we're using a simple equality check.
+        return inputPassword.equals(storedHash);
+    }
 }

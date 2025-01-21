@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<GridPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.taskmanager.controller.LoginController"
+          alignment="center" hgap="10" vgap="10">
+    <TextField fx:id="usernameField" promptText="Username" GridPane.rowIndex="0"/>
+    <PasswordField fx:id="passwordField" promptText="Password" GridPane.rowIndex="1"/>
+    <Button text="Login" onAction="#handleLogin" GridPane.rowIndex="2"/>
+    <Label fx:id="errorMessage" GridPane.rowIndex="3"/>
+</GridPane>
